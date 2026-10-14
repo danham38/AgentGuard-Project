@@ -1,4 +1,6 @@
 package com.agentguard.tool;
 
-public class Tool {
+
+public interface Tool {
+    String getName();
 }
