@@ -1,6 +1,7 @@
 package com.agentguard.tool;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -9,13 +10,30 @@ import static org.junit.jupiter.api.Assertions.*;
 //ARRANGE, ACT, ASSERT
 public class ToolRegistryTest {
 
+    public static class TestTool implements Tool {
+        private final String name;
+        TestTool(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public Optional<String> execute(Map<String, String> args) {
+            throw new UnsupportedOperationException("Execution unsupported in registry tests");
+        }
+    }
+
     @Test
     public void shouldRegisterAndFindTool() {
         //lambda used as Tool is abstract so cant be instantiated
         //use lamda instead to init
         //ARRANGE
         ToolRegistry registry = new ToolRegistry();
-        Tool trueTool = () -> "documents.read";
+        TestTool trueTool = new TestTool("documents.read");
 
         //ACT
         String trueToolName = trueTool.getName();
@@ -36,7 +54,7 @@ public class ToolRegistryTest {
         //ARRANGE
         ToolRegistry registry = new ToolRegistry();
         //ACT
-        Tool tool = () -> "not_real";
+        TestTool tool = new TestTool("not-real");
 
         //ASSERT
        assertTrue(registry.findTool(tool.getName()).isEmpty());
@@ -48,8 +66,8 @@ public class ToolRegistryTest {
         //ARRANGE
         ToolRegistry registry = new ToolRegistry();
         //duplicate entries
-        Tool tool1 = () -> "dup";
-        Tool tool2 = () -> "dup";
+        TestTool tool1 = new TestTool("dup");
+        Tool tool2 = new TestTool("dup");
 
         registry.register(tool1);
 
@@ -63,7 +81,7 @@ public class ToolRegistryTest {
 
     @Test
     public void shouldRejectBlankInput() {
-        Tool tool = () -> "";
+        Tool tool = new TestTool("");
         ToolRegistry reg = new ToolRegistry();
         assertThrows(IllegalArgumentException.class, () -> {
             reg.register(tool);
@@ -72,7 +90,7 @@ public class ToolRegistryTest {
 
     @Test
     public void shouldRejectOtherBlankInput() {
-        Tool tool = () -> " ";
+        Tool tool = new TestTool(" ");
         ToolRegistry reg = new ToolRegistry();
         assertThrows(IllegalArgumentException.class, () -> {
             reg.register(tool);
