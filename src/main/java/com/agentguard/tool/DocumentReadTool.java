@@ -26,4 +26,17 @@ public class DocumentReadTool implements Tool {
         //identifying what the tool does
        return "documents.read";
     }
+
+    @Override
+    public Optional<String> execute(Map<String, String> args) {
+        //reject null args map
+        if (args == null || args.isEmpty()) {
+            throw new IllegalArgumentException("Argument map cannot be null or empty");
+        }
+        //extract docID
+        String docId = args.get("documentId");
+        //pass that into readDoc method to return actual document
+        return readDocument(docId);
+    }
+
 }
