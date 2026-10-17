@@ -1,5 +1,6 @@
 package com.agentguard.tool;
 
+import com.agentguard.audit.AuditLog;
 import com.agentguard.executor.ToolExecutor;
 import com.agentguard.policy.PolicyEngine;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,8 @@ public class MessageSendToolTest {
             "recipient", "example@gmail.com",
             "message", "test-message"
     );
+    AuditLog log = new AuditLog();
+
 
     @Test
     public void shouldReturnCorrectToolName() {
@@ -125,7 +128,7 @@ public class MessageSendToolTest {
         );
         registry.register(tool);
         PolicyEngine policyEngine = new PolicyEngine(config);
-        ToolExecutor exe = new ToolExecutor(registry, policyEngine);
+        ToolExecutor exe = new ToolExecutor(registry, policyEngine, log);
 
         assertThrows(SecurityException.class, () -> {
             exe.execute("agent-001", "messages.send", args);
@@ -141,7 +144,7 @@ public class MessageSendToolTest {
         );
         registry.register(tool);
         PolicyEngine policyEngine = new PolicyEngine(config);
-        ToolExecutor exe = new ToolExecutor(registry, policyEngine);
+        ToolExecutor exe = new ToolExecutor(registry, policyEngine, log);
         Optional<String> result = exe.execute("agent-001", "messages.send", args);
         assertEquals("message recorded", result.orElseThrow());
         assertEquals(1, tool.getSentMessages().size());
