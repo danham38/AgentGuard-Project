@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.security.Principal;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,13 +26,16 @@ public class ToolController {
 
     @PostMapping("/execute")
     public ResponseEntity<String> executeTool(
-            @RequestBody ToolExecuteRequest request) {
+            @RequestBody ToolExecuteRequest request,
+            Principal principal) {
         String toolName = request.toolName();
-        if (!"documents.read".equals(toolName)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+
         Map<String, String> args = request.arguments();
-        Optional<String> result = executor.execute("agent-001", toolName, args);
+        Optional<String> result = executor.execute(
+                principal.getName(),
+                request.toolName(),
+                request.arguments()
+        );
         if (result.isEmpty()) {
            return ResponseEntity.notFound().build();
         }
