@@ -15,7 +15,7 @@ public class MessageSendTool implements Tool {
     }
 
     @Override
-    public Optional<String> execute(Map<String, String> args) {
+    public synchronized Optional<String> execute(Map<String, String> args) {
         //validate arguments
         if (args == null || args.isEmpty()) {
             throw new IllegalArgumentException("Argument map cannot be null or empty");
@@ -39,7 +39,7 @@ public class MessageSendTool implements Tool {
     }
 
     //return snapshot of sent messages to make messageList immutable
-    public List<SentMessage> getSentMessages() {
+    public synchronized List<SentMessage> getSentMessages() {
         List<SentMessage> snapshot = List.copyOf(messageList);
         return snapshot;
     }

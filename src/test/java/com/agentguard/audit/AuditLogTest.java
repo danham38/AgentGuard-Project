@@ -4,9 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AuditLogTest {
     AuditEvent event = new AuditEvent(
@@ -55,5 +57,28 @@ public class AuditLogTest {
         assertEquals(2, log.getEvents().size());
     }
 
+    @Test
+    void shouldRecordConcurrentAuditEvents() throws Exception {
+        AuditLog auditLog = new AuditLog();
+        AuditEvent event = new AuditEvent(
+                "agent-002",
+                "documents.read",
+                AuditOutcome.SUCCESS,
+                Instant.now()
+        );
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        for (int i = 0; i < 100; i++) {
+            executor.execute(() -> {
+                auditLog.recordEvent(event);
+            });
+        }
+        executor.shutdown();
+        boolean completed = executor.awaitTermination(
+                5, TimeUnit.SECONDS
+        );
+        assertTrue(completed);
+        assertEquals(100, auditLog.getEvents().size());
+
+    }
 
 }
