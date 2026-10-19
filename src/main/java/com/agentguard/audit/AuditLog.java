@@ -6,7 +6,7 @@ import java.util.List;
 public class AuditLog {
     private final List<AuditEvent> events = new ArrayList<>();
 
-    public void recordEvent(AuditEvent event) {
+    public synchronized void recordEvent(AuditEvent event) {
         if (event == null) {
             throw new IllegalArgumentException("Audit event cannot be null");
         }
@@ -14,7 +14,7 @@ public class AuditLog {
     }
 
 
-    public List<AuditEvent> getEvents() {
+    public synchronized List<AuditEvent> getEvents() {
         List<AuditEvent> snapshot = List.copyOf(events);
         return snapshot;
     }

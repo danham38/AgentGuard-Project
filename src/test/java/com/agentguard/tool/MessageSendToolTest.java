@@ -1,14 +1,20 @@
 package com.agentguard.tool;
 
+import com.agentguard.audit.AuditEvent;
 import com.agentguard.audit.AuditLog;
+import com.agentguard.audit.AuditOutcome;
 import com.agentguard.executor.ToolExecutor;
 import com.agentguard.policy.PolicyEngine;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -148,6 +154,24 @@ public class MessageSendToolTest {
         Optional<String> result = exe.execute("agent-001", "messages.send", args);
         assertEquals("message recorded", result.orElseThrow());
         assertEquals(1, tool.getSentMessages().size());
+    }
+
+    @Test
+    void shouldRecordConcurrentMessages() throws Exception {
+        AuditLog auditLog = new AuditLog();
+
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+
+
+        for (int i =0; i < 100; i++) {
+            executor.execute(() -> {
+                tool.execute(args);
+            });
+        }
+        executor.shutdown();
+        boolean completed = executor.awaitTermination(5, TimeUnit.SECONDS);
+        assertTrue(completed);
+        assertEquals(100, tool.getSentMessages().size());
     }
 
 
